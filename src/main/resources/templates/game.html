@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Game Screen</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <h1>KBC Style Game</h1>
+    <h2>Question: <span th:text="${question}"></span></h2>
+    <ul>
+        <li th:each="option : ${options}" th:text="${option}"></li>
+    </ul>
+
+    <h3>Scan to join:</h3>
+    <img th:src="${qrCode}" alt="QR Code to join the game"/>
+
+    <script type="text/javascript">
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/game-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/answer', function (greeting) {
+                    alert(greeting.body);
+                });
+            });
+        }
+
+        function sendAnswer(answer) {
+            stompClient.send("/app/answer", {}, JSON.stringify({'answer': answer}));
+        }
+
+        connect();
+    </script>
+</body>
+</html>
